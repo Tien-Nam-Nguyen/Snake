@@ -28,7 +28,12 @@ LOSE_SOUND = pygame.mixer.Sound('Assets/JKL83NH-video-game-win.mp3')
 
 x_coor = [x for x in range(0, WIDTH - 20 + 1, 20)]
 y_coor = [y for y in range(0, HEIGHT - 20 + 1, 20)]
-snakes = [sna.Snake((500, 300), x_coor, y_coor)]
+
+snakes = [sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor),
+          sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor),
+          sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor),
+          sna.Snake((500, 300), x_coor, y_coor)]
+dead_snakes = []
 
 
 
@@ -111,9 +116,18 @@ def main():
             if snake.snek_body[0].x + snake.snek_body[0].width > WIDTH or snake.snek_body[0].x < 0 or \
             snake.snek_body[0].y + snake.snek_body[0].height > HEIGHT or snake.snek_body[0].y < 0 or \
             snake.snek_body[0].collidelist(snake.snek_body[1:]) != -1 or snake.movecountdown == 0:
+                snake.score -= 1
+                dead_snakes.insert(0, snake)
                 snakes.remove(snake)
-            #pygame.time.delay(3000)
-            # break
+        if len(snakes) == 0 and dead_snakes[0].score < 80:
+            for i in range(5):
+                snakes.append(dead_snakes[0].crossover(dead_snakes[1]).mutate(0.2))
+            snakes.extend(dead_snakes[0:5])
+            dead_snakes.clear()
+        elif len(dead_snakes) > 0 and dead_snakes[0].score >= 80:
+            break
+
+
     pygame.quit()
 
 

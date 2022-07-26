@@ -10,10 +10,10 @@ SNAKE_SIZE = (20, 20)  # 15 X 15
 SPACE = 1
 
 # Directions
-LEFT = 1
-RIGHT = 2
-UP = 3
-DOWN = 4
+LEFT = 0
+RIGHT = 1
+UP = 2
+DOWN = 3
 
 SIN45 = np.sqrt(2) / 2
 
@@ -51,11 +51,12 @@ class Brain:        # 24 x 10 x 4
 class Snake:
 
     def __init__(self, head_pos, x_coor, y_coor):
-        self.snek_body = [pygame.Rect(head_pos, SNAKE_SIZE)]
-        self.direction = random.randint(1, 4)
-        self.score = 0
+        self.snek_body = []
         self.x_coor = x_coor
         self.y_coor = y_coor
+        self.snek_body.append(pygame.Rect(self.food_create(), SNAKE_SIZE))
+        self.direction = random.randint(0, 3)
+        self.score = 0  
         first_food_pos = self.food_create()
         self.food = pygame.Rect(first_food_pos, SNAKE_SIZE)
         self.movecountdown = 200
@@ -64,6 +65,7 @@ class Snake:
 
 
     def grow(self):
+        new_square = None
         if self.direction == LEFT:
             new_square = pygame.Rect((self.snek_body[0].x - SNAKE_SIZE[0], self.snek_body[0].y), SNAKE_SIZE)
         if self.direction == RIGHT:
