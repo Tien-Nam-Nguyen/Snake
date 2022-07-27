@@ -18,7 +18,7 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
-FPS = 3
+FPS = 10
 VEL = 1
 
 
@@ -29,24 +29,21 @@ LOSE_SOUND = pygame.mixer.Sound('Assets/JKL83NH-video-game-win.mp3')
 x_coor = [x for x in range(0, WIDTH - 20 + 1, 20)]
 y_coor = [y for y in range(0, HEIGHT - 20 + 1, 20)]
 
-snakes = [sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor),
-          sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor),
-          sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor), sna.Snake((500, 300), x_coor, y_coor),
-          sna.Snake((500, 300), x_coor, y_coor)]
+snakes = []
+for i in range(500):
+    snakes.append(sna.Snake((500, 400), x_coor, y_coor))
 dead_snakes = []
 
 
 
 def draw():
-    global snakes
     window.fill(BLACK)
     for snake in snakes:
-        snake.movecountdown -= 1
         for i in range(len(snake.snek_body)):
             pygame.draw.rect(window, GREEN, snake.snek_body[i])
         # Draw food rectangle
         pygame.draw.rect(window, RED, snake.food)
-        snake.movecountdown -= 1
+        
 
 
     # yellow_text = HEALTH_FONT.render(f'Score: {snake.score}', True, YELLOW)
@@ -61,6 +58,11 @@ def draw():
         LOSE_SOUND.play()
     '''
     pygame.display.update()
+
+
+
+def sort_score(e):
+    return e.score
 
 
 
@@ -86,16 +88,16 @@ def main():
         
         
         for snake in snakes:
-            '''
+            
             next_move = snake.predict(snake.get_input())
-            if next_move == sna.UP:
-                pass
-            if next_move == sna.DOWN:
-                pass
-            if next_move == sna.LEFT:
-                pass
-            if next_move == sna.RIGHT:
-                pass'''
+            if next_move == sna.UP and snake.direction != sna.DOWN:
+                snake.direction = sna.UP
+            if next_move == sna.DOWN and snake.direction != sna.UP:
+                snake.direction = sna.DOWN
+            if next_move == sna.LEFT and snake.direction != sna.RIGHT:
+                snake.direction = sna.LEFT
+            if next_move == sna.RIGHT and snake.direction != sna.LEFT:
+                snake.direction = sna.RIGHT
             
             snake.grow()
 
@@ -110,6 +112,7 @@ def main():
             else:
                 snake.snek_body.pop()
             
+        snake.movecountdown -= 1
 
         draw()
         for snake in snakes:
@@ -119,15 +122,31 @@ def main():
                 snake.score -= 1
                 dead_snakes.insert(0, snake)
                 snakes.remove(snake)
-        if len(snakes) == 0 and dead_snakes[0].score < 80:
-            for i in range(5):
-                snakes.append(dead_snakes[0].crossover(dead_snakes[1]).mutate(0.2))
-            snakes.extend(dead_snakes[0:5])
+        if len(snakes) == 0 and dead_snakes[0].score < 50:
+            dead_snakes.sort(key=sort_score, reverse=True)
+            print(f'Parents: {dead_snakes[0].score} : {dead_snakes[1].score} : {len(dead_snakes)}')
+            for i in range(40):
+                snakes.append(dead_snakes[0].crossover(dead_snakes[1]).mutate(0.1))
+            
+            for i in range(40):
+                snakes.append(dead_snakes[2].crossover(dead_snakes[3]).mutate(0.1))
+
+            for i in range(40):
+                snakes.append(dead_snakes[4].crossover(dead_snakes[5]).mutate(0.1))
+
+            for i in range(40):
+                snakes.append(dead_snakes[6].crossover(dead_snakes[7]).mutate(0.1))
+            
+            for i in range(40):
+                snakes.append(dead_snakes[8].crossover(dead_snakes[8]).mutate(0.1))
+            
+            
+            snakes.extend(dead_snakes[0:300])
             dead_snakes.clear()
-        elif len(dead_snakes) > 0 and dead_snakes[0].score >= 80:
+        elif len(dead_snakes) > 0 and dead_snakes[0].score >= 50:
             break
 
-
+    print(dead_snakes[0].brain.weights)
     pygame.quit()
 
 

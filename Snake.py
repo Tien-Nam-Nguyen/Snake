@@ -17,7 +17,7 @@ DOWN = 3
 
 SIN45 = np.sqrt(2) / 2
 
-class Brain:        # 24 x 10 x 4
+class Brain:        # 25 x 10 x 4
     
     def __init__(self, sizes):
         self.num_layers = len(sizes)
@@ -32,7 +32,7 @@ class Brain:        # 24 x 10 x 4
 
 
     def feedforward(self, a):
-        for w, b in self.weights, self.biases:
+        for w, b in zip(self.weights, self.biases):
             a = self.sigmoid(np.dot(w, a) + b)
         a = self.softmax(np.dot(self.output_weight, a) + self.output_bias)
         return a
@@ -61,7 +61,7 @@ class Snake:
         self.food = pygame.Rect(first_food_pos, SNAKE_SIZE)
         self.movecountdown = 200
 
-        self.brain = Brain([25, 10, 4])
+        self.brain = Brain([25, 10, 10, 4])
 
 
     def grow(self):
@@ -89,7 +89,7 @@ class Snake:
         
     def crossover(self, partner):
         child = Snake((500, 300), self.x_coor, self.y_coor)
-        for w, child_w, partner_w in self.brain.weights, child.brain.weights, partner.brain.weights:
+        for w, child_w, partner_w in zip(self.brain.weights, child.brain.weights, partner.brain.weights):
             size = w.shape
             r = np.random.randint(0, size[0])
             c = np.random.randint(0, size[1])
@@ -100,7 +100,7 @@ class Snake:
                     else:
                         child_w[i][j] = partner_w[i][j]
         
-        for b, child_b, partner_b in self.brain.biases, child.brain.biases, partner.brain.biases:
+        for b, child_b, partner_b in zip(self.brain.biases, child.brain.biases, partner.brain.biases):
             r = np.random.randint(0, b.shape[0])
             for i in range(b.shape[0]):
                 if i <= r:
@@ -110,10 +110,10 @@ class Snake:
 
         # Output weight crossover
         sizeo = self.brain.output_weight.shape
-        r = np.random.randint(0, sizeo.shape[0])
-        c = np.random.randint(0, sizeo.shape[1])
-        for i in range(sizeo.shape[0]):
-            for j in range(sizeo.shape[1]):
+        r = np.random.randint(0, sizeo[0])
+        c = np.random.randint(0, sizeo[1])
+        for i in range(sizeo[0]):
+            for j in range(sizeo[1]):
                 if i < r or (i <= r and j <= c):
                     child.brain.output_weight[i][j] = self.brain.output_weight[i][j]
                 else:
@@ -172,6 +172,7 @@ class Snake:
                 self.brain.output_bias[i][0] = 1
             elif self.brain.output_bias[i][0] < -1:
                 self.brain.output_bias[i][0] = -1
+        return self
 
 
                         
@@ -278,7 +279,7 @@ class Snake:
         res.append(self.direction)
 
         vec = np.array(res).reshape(-1, 1)
-        return vec
+        return vec / 1166
         
         
 
@@ -323,15 +324,6 @@ class Snake:
             x += x_trend
             y += y_trend
         return resu
-
-
-
-
-
-
-        
-        
-
 
 
     def predict(self, inputs):
