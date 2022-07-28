@@ -2,6 +2,7 @@ from turtle import right
 import pygame
 import numpy as np
 import random
+import time
 
 pygame.init()
 BLACK = (0, 0, 0)
@@ -22,11 +23,11 @@ class Brain:        # 25 x 10 x 4
     def __init__(self, sizes):
         self.num_layers = len(sizes)
         self.sizes = sizes
-        self.weights = [np.random.randn(y, x) / np.sqrt(x) for x, y in zip(self.sizes[:-2], self.sizes[1:-1])]
-        self.biases = [np.random.randn(x, 1) for x in self.sizes[1:-1]]
+        self.weights = [np.random.uniform(-1, 1, size=(y,x)) for x, y in zip(self.sizes[:-2], self.sizes[1:-1])]
+        self.biases = [np.random.uniform(-1, 1, size=(x,1)) for x in self.sizes[1:-1]]
 
-        self.output_weight = np.random.randn(self.sizes[-1], self.sizes[-2]) / np.sqrt(self.sizes[-2])
-        self.output_bias = np.random.randn(4, 1)
+        self.output_weight = np.random.uniform(-1,1,size=(self.sizes[-1], self.sizes[-2])) 
+        self.output_bias = np.random.uniform(-1,1,size=(4, 1))
 
 
 
@@ -59,7 +60,8 @@ class Snake:
         self.score = 0  
         first_food_pos = self.food_create()
         self.food = pygame.Rect(first_food_pos, SNAKE_SIZE)
-        self.movecountdown = 200
+        self.movecountdown = 500
+        self.ttl = 0
 
         self.brain = Brain([25, 10, 10, 4])
 
@@ -178,108 +180,109 @@ class Snake:
                         
     def get_input(self):
         res = []
-        eyes = self.snek_body[0]
+        eyes = (self.snek_body[0].x + 10, self.snek_body[0].y + 10)
+        food_mid = (self.food.x + 10, self.food.y + 10)
         # Distances to the wall
         # D-T-N-B
-        res.append(1000 - eyes.x)
-        res.append(eyes.x)
-        res.append(600 - eyes.y)
-        res.append(eyes.y)
+        res.append(1000 - eyes[0])
+        res.append(eyes[0])
+        res.append(600 - eyes[1])
+        res.append(eyes[1])
 
         # Distances to the body
-        if eyes.y <= 1000 - eyes.x:
-            right_up = eyes.y / SIN45
+        if eyes[1] <= 1000 - eyes[0]:
+            right_up = eyes[1] / SIN45
         else:
-            right_up = (1000 - eyes.x) / SIN45
+            right_up = (1000 - eyes[0]) / SIN45
         res.append(right_up)
 
-        if 1000 - eyes.x <= 600 - eyes.y:
-            right_down = (1000 - eyes.x) / SIN45
+        if 1000 - eyes[0] <= 600 - eyes[1]:
+            right_down = (1000 - eyes[0]) / SIN45
         else:
-            right_down = (600 - eyes.y) / SIN45
+            right_down = (600 - eyes[1]) / SIN45
         res.append(right_down)
 
-        if 600 - eyes.y <= eyes.x:
-            left_down = (600 - eyes.y) / SIN45
+        if 600 - eyes[1] <= eyes[0]:
+            left_down = (600 - eyes[1]) / SIN45
         else:
-            left_down = eyes.x / SIN45
+            left_down = eyes[0] / SIN45
         res.append(left_down)
 
-        if eyes.x <= eyes.y:
-            left_up = eyes.x / SIN45
+        if eyes[0] <= eyes[1]:
+            left_up = eyes[0] / SIN45
         else:
-            left_up = eyes.y / SIN45
+            left_up = eyes[1] / SIN45
         res.append(left_up)
 
 
         # Food distances
-        if eyes.y == self.food.y and self.food.x >= eyes.x:
-            res.append(self.food.x - eyes.x)
+        if eyes[1] == food_mid[1] and food_mid[0] >= eyes[0]:
+            res.append(food_mid[0] - eyes[0])
         else:
             res.append(-1)
         
-        if eyes.y == self.food.y and self.food.x <= eyes.x:
-            res.append(eyes.x - self.food.x)
+        if eyes[1] == food_mid[1] and food_mid[0] <= eyes[0]:
+            res.append(eyes[0] - food_mid[0])
         else:
             res.append(-1)
 
-        if eyes.x == self.food.x and self.food.y >= eyes.y:
-            res.append(self.food.y - eyes.y)
+        if eyes[0] == food_mid[0] and food_mid[1] >= eyes[1]:
+            res.append(food_mid[1] - eyes[1])
         else:
             res.append(-1)
         
-        if eyes.x == self.food.x and self.food.y <= eyes.y:
-            res.append(eyes.y - self.food.y)
+        if eyes[0] == food_mid[0] and food_mid[1] <= eyes[1]:
+            res.append(eyes[1] - food_mid[1])
         else:
             res.append(-1)
 
         # Right up
-        x, y = eyes.x, eyes.y
-        res.append(self.vision(x, y, self.food.x, self.food.y, 20, -20))
+        x, y = eyes[0], eyes[1]
+        res.append(self.vision(x, y, food_mid[0], food_mid[1], 20, -20))
         
         # Right down
-        x, y = eyes.x, eyes.y
-        res.append(self.vision(x, y, self.food.x, self.food.y, 20, 20))
+        x, y = eyes[0], eyes[1]
+        res.append(self.vision(x, y, food_mid[0], food_mid[1], 20, 20))
        
         # Left down
-        x, y = eyes.x, eyes.y
-        res.append(self.vision(x, y, self.food.x, self.food.y, -20, 20))
+        x, y = eyes[0], eyes[1]
+        res.append(self.vision(x, y, food_mid[0], food_mid[1], -20, 20))
         
        
         # Left up
-        x, y = eyes.x, eyes.y
-        res.append(self.vision(x, y, self.food.x, self.food.y, -20, -20))
+        x, y = eyes[0], eyes[1]
+        res.append(self.vision(x, y, food_mid[0], food_mid[1], -20, -20))
 
 
         # Tail distances
-        x, y = eyes.x, eyes.y
+        x, y = eyes[0], eyes[1]
         res.append(self.try_tail(x, y, 20, 0))
         
-        x, y = eyes.x, eyes.y
+        x, y = eyes[0], eyes[1]
         res.append(self.try_tail(x, y, -20, 0))
         
-        x, y = eyes.x, eyes.y
+        x, y = eyes[0], eyes[1]
         res.append(self.try_tail(x, y, 0, 20))
 
-        x, y = eyes.x, eyes.y
+        x, y = eyes[0], eyes[1]
         res.append(self.try_tail(x, y, 0, -20))
 
-        x, y = eyes.x, eyes.y
+        x, y = eyes[0], eyes[1]
         res.append(self.try_tail(x, y, 20, -20))
 
-        x, y = eyes.x, eyes.y
+        x, y = eyes[0], eyes[1]
         res.append(self.try_tail(x, y, 20, 20))
 
-        x, y = eyes.x, eyes.y
+        x, y = eyes[0], eyes[1]
         res.append(self.try_tail(x, y, -20, 20))
 
-        x, y = eyes.x, eyes.y
+        x, y = eyes[0], eyes[1]
         res.append(self.try_tail(x, y, -20, -20))
 
         res.append(self.direction)
 
         vec = np.array(res).reshape(-1, 1)
-        return vec / 1166
+        return vec 
         
         
 
@@ -305,7 +308,7 @@ class Snake:
     def tail_detect(self, x, y):
         res = False
         for body in self.snek_body:
-            if body.x == x and body.y == y:
+            if body.x + 10 == x and body.y + 10 == y:
                 res = True
                 break
         return res
