@@ -32,8 +32,8 @@ x_coor = [x for x in range(0, WIDTH - 20 + 1, 20)]
 y_coor = [y for y in range(0, HEIGHT - 20 + 1, 20)]
 
 snakes = []
-for i in range(500):
-    snakes.append(sna.Snake((500, 400), x_coor, y_coor))
+for i in range(800):
+    snakes.append(sna.Snake(x_coor, y_coor))
 dead_snakes = []
 
 
@@ -73,7 +73,6 @@ def main():
     run = True
     clock = pygame.time.Clock()
     gen = 1
-    all = 0
     record = -1
     while run:
         clock.tick(FPS)
@@ -109,7 +108,7 @@ def main():
             
             
             if snake.snek_body[0].colliderect(snake.food):
-                snake.score += 1
+                snake.score += 3000
                 snake.movecountdown = 500
                 x, y = snake.food_create()
                 snake.food.x = x
@@ -122,43 +121,41 @@ def main():
 
 
         draw()
-        all += 1
         for snake in snakes:
             if snake.snek_body[0].x + snake.snek_body[0].width > WIDTH or \
             snake.snek_body[0].x < 0 or snake.snek_body[0].y + snake.snek_body[0].height > HEIGHT or \
             snake.snek_body[0].y < 0 or snake.snek_body[0].collidelist(snake.snek_body[1:]) != -1 or snake.movecountdown <= 0:
                 if snake.movecountdown <= 0:
-                    print(f'tru nang {snake.score} {snake.ttl}')
-                    snake.score -= snake.ttl
+                    snake.score -= snake.ttl * 50
                 else:
-                    snake.score -= 10
+                    snake.score -= 10000
                     #print('dc cong them ne')
-                    snake.score = snake.score + snake.ttl
+                    snake.score = snake.score + snake.ttl * 10
                 dead_snakes.insert(0, snake)
                 snakes.remove(snake)
-        if len(snakes) == 0 and dead_snakes[0].score < 1000000:
+        if len(snakes) == 0 and dead_snakes[0].score < 10000000:
             dead_snakes.sort(key=sort_score, reverse=True)
-            print(f'Gen {gen}:      {dead_snakes[0].score} : {dead_snakes[1].score} : {all}')
+            print(f'Gen {gen}:      {dead_snakes[0].score} : {dead_snakes[1].score} : {len(dead_snakes[0].snek_body)} : {len(dead_snakes)}')
             gen += 1
-            for i in range(80):
+            for i in range(200):
                 snakes.append(dead_snakes[0].crossover(dead_snakes[1]).mutate(0.05))
             
-            for i in range(80):
+            for i in range(200):
                 snakes.append(dead_snakes[2].crossover(dead_snakes[3]).mutate(0.05))
 
-            for i in range(80):
+            for i in range(200):
                 snakes.append(dead_snakes[4].crossover(dead_snakes[5]).mutate(0.05))
 
-            
-            
-            snakes.extend(dead_snakes[0:260])
+                
+            for snake in dead_snakes[0:200]:
+                s = sna.Snake( x_coor, y_coor)
+                s.brain = snake.brain
+                snakes.append(s)
             dead_snakes.clear()
-        elif len(dead_snakes) > 0 and dead_snakes[0].score >= 1000000:
-            print(f'abraane nam {dead_snakes[0].score}')
+        elif len(dead_snakes) > 0 and dead_snakes[0].score >= 10000000:
             break
 
     print(dead_snakes[0].brain.weights)
-    print(f'Fuck {snakes[0].ttl}')
     pygame.quit()
 
 

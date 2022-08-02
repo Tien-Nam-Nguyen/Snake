@@ -51,7 +51,7 @@ class Brain:        # 25 x 10 x 4
 
 class Snake:
 
-    def __init__(self, head_pos, x_coor, y_coor):
+    def __init__(self, x_coor, y_coor):
         self.snek_body = []
         self.x_coor = x_coor
         self.y_coor = y_coor
@@ -90,7 +90,7 @@ class Snake:
         return x, y
         
     def crossover(self, partner):
-        child = Snake((500, 300), self.x_coor, self.y_coor)
+        child = Snake(self.x_coor, self.y_coor)
         for w, child_w, partner_w in zip(self.brain.weights, child.brain.weights, partner.brain.weights):
             size = w.shape
             r = np.random.randint(0, size[0])
@@ -128,7 +128,6 @@ class Snake:
                 child.brain.output_bias[i][0] = self.brain.output_bias[i][0]
             else:
                 child.brain.output_bias[i][0] = partner.brain.output_bias[i][0]
-        
         return child
 
 
