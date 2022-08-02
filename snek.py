@@ -4,11 +4,8 @@ import pygame
 from scipy import rand
 import Snake as sna
 import random
-import threading
 import time
 
-
-from pong import BLACK
 
 pygame.font.init()
 pygame.init()
@@ -20,6 +17,7 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
+BLACK = (0, 0, 0)
 FPS = 30
 VEL = 1
 
